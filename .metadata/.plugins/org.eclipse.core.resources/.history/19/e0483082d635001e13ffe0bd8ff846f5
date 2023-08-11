@@ -1,0 +1,10 @@
+/**
+ * 
+ */
+/**
+ * @author darry
+ *
+ */
+module PoiseProjectManagement {
+	requires java.sql;
+}

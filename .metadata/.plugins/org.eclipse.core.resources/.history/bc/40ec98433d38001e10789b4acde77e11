@@ -1,0 +1,175 @@
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Scanner;
+
+/**
+ * This class provides a method to add a new project to a database and display its details.
+ * If a project name is not provided, it automatically generates a name using
+ * the combination of the building type and the last name of the customer.
+ */
+
+public class AddProject {
+    private Connection connection;
+    
+    /**
+     * Constructs an AddProject object with a specified database connection.
+     *
+     * @param connection The database connection.
+     */
+    
+    public AddProject(Connection connection) {
+        this.connection = connection;
+    }
+
+    /**
+     * Adds a new project to the database based on user input and displays project details.
+     *
+     * @param scanner The Scanner object to read user input.
+     */
+    
+    public void addNewProject(Scanner scanner) {
+        System.out.println("Add new project");
+        System.out.println("---------------");
+        
+        // Get project details from user input
+    	System.out.println("Enter project number: ");
+	    int projectNumber = scanner.nextInt();
+	    scanner.nextLine(); 
+	    System.out.println("Enter project name: ");
+	    String projectName = scanner.nextLine();
+
+	    System.out.println("Enter building type: ");
+	    String buildingType = scanner.nextLine();
+
+	    System.out.println("Enter project address: ");
+	    String projectAddress = scanner.nextLine();
+
+	    System.out.println("Enter erf number: ");
+	    int erfNumber = scanner.nextInt();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter total project fee: ");
+	    double totalProjectFee = scanner.nextDouble();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter total paid: ");
+	    double totalPaid = scanner.nextDouble();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter project deadline (YYYY-MM-DD): ");
+	    String projectDeadline = scanner.nextLine();
+
+	    System.out.println("Enter architect ID: ");
+	    int architectID = scanner.nextInt();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter contractor ID: ");
+	    int contractorID = scanner.nextInt();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter customer ID: ");
+	    int customerID = scanner.nextInt();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter project manager ID: ");
+	    int projectManagerID = scanner.nextInt();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter structural engineer ID: ");
+	    int structuralEngID = scanner.nextInt();
+	    scanner.nextLine(); 
+
+	    try {
+	    	// Prepare and execute SQL insert statement
+	        PreparedStatement statement = connection.prepareStatement(
+	            "INSERT INTO Project (project_number, project_name, building_type, project_address, erf_number, " +
+	            "total_projectfee, total_paid, project_deadline, architect_id, contractor_id, " +
+	            "customer_id, projectmanager_id, structuraleng_id) " +
+	            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	        );
+
+	        // Set parameters 
+	        statement.setInt(1, projectNumber);
+	        statement.setString(2, projectName);
+	        statement.setString(3, buildingType);
+	        statement.setString(4, projectAddress);
+	        statement.setInt(5, erfNumber);
+	        statement.setDouble(6, totalProjectFee);
+	        statement.setDouble(7, totalPaid);
+	        statement.setString(8, projectDeadline);
+	        statement.setInt(9, architectID);
+	        statement.setInt(10, contractorID);
+	        statement.setInt(11, customerID);
+	        statement.setInt(12, projectManagerID);
+	        statement.setInt(13, structuralEngID);
+
+	        int rowsAffected = statement.executeUpdate();
+
+	        if (rowsAffected > 0) {
+	        	System.out.println("---------------------------------");
+	            System.out.println("New project added to the database.");
+
+	            // Display the added project details
+	            System.out.println("");
+	            System.out.println("Added Project Details:");
+	            System.out.println("----------------------");
+	            System.out.println("Project Number: " + projectNumber);
+	            System.out.println("Project Name: " + projectName);
+	            System.out.println("Building Type: " + buildingType);
+	            System.out.println("Project Address: " + projectAddress);
+	            System.out.println("ERF Number: " + erfNumber);
+	            System.out.println("Total Project Fee: " + totalProjectFee);
+	            System.out.println("Total Paid: " + totalPaid);
+	            System.out.println("Project Deadline: " + projectDeadline);
+	            // Display associated person names using their IDs
+	            System.out.println("Architect: " + getPersonName(connection, "Architect", architectID));
+	            System.out.println("Contractor: " + getPersonName(connection, "Contractor", contractorID));
+	            System.out.println("Customer: " + getPersonName(connection, "Contractor", customerID));
+	            System.out.println("Project Manager ID: " + getPersonName(connection, "Contractor", projectManagerID));
+	            System.out.println("Structural Engineer ID: " + getPersonName(connection, "Contractor", structuralEngID));
+	            System.out.println("----------------------------------------");
+
+	            }
+	        
+	        else {
+	        	System.out.println("Failed to add project.");
+	        	System.out.println("");
+	        	
+	        }
+	        System.out.println("New project added to the database.");
+	        System.out.println("");
+	        
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+
+	    /**
+	     * Retrieves the name of a person from the specified table using their ID.
+	     *
+	     * @param connection The database connection.
+	     * @param tableName  The name of the table (e.g., "Architect", "Contractor").
+	     * @param personID   The ID of the person.
+	     * @return The name of the person.
+	     */
+	    
+		private static String getPersonName(Connection connection, String tableName, int personID) {
+		    String personName = "";
+		    try {
+		        PreparedStatement statement = connection.prepareStatement(
+		            "SELECT " + tableName.toLowerCase() + "_name FROM " + tableName + " WHERE " + tableName.toLowerCase() + "_id = ?"
+		        );
+		        statement.setInt(1, personID);
+		
+		        ResultSet resultSet = statement.executeQuery();
+		        if (resultSet.next()) {
+		            personName = resultSet.getString(tableName.toLowerCase() + "_name");
+		        }
+		    } catch (SQLException e) {
+		        e.printStackTrace();
+		    }
+		    return personName;
+		}
+}

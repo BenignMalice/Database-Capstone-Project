@@ -1,0 +1,74 @@
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Scanner;
+
+public class FinaliseProject {
+    private Connection connection;
+
+    public FinaliseProject(Connection connection) {
+        this.connection = connection;
+    }
+
+    public void finalizeProject(Scanner scanner) {
+        System.out.println("Enter project number to finalize: ");
+        int projectNumber = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+
+        try {
+            // Update project status and completion date
+            PreparedStatement updateStatement = connection.prepareStatement(
+                "UPDATE Project SET project_status = 'finalised', completion_date = CURDATE() WHERE project_number = ?"
+            );
+            updateStatement.setInt(1, projectNumber);
+            int rowsUpdated = updateStatement.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                System.out.println("Project finalised successfully.");
+                System.out.println("-------------------------------");
+                System.out.println("");
+
+                // Fetch and display the finalized project details
+                PreparedStatement selectStatement = connection.prepareStatement(
+                    "SELECT P.*, A.architect_name, C.contractor_name, PM.manager_name, SE.structuraleng_name " +
+                    "FROM Project P " +
+                    "JOIN Architect A ON P.architect_id = A.architect_id " +
+                    "JOIN Contractor C ON P.contractor_id = C.contractor_id " +
+                    "JOIN ProjectManager PM ON P.projectmanager_id = PM.projectmanager_id " +
+                    "JOIN StructuralEng SE ON P.structuraleng_id = SE.structuraleng_id " +
+                    "WHERE P.project_number = ?"
+                );
+                selectStatement.setInt(1, projectNumber);
+
+                ResultSet resultSet = selectStatement.executeQuery();
+                if (resultSet.next()) {
+                    System.out.println("Finalised Project Details:");
+                    System.out.println("--------------------------");
+                    System.out.println("");
+                    // Print completion date
+                    System.out.println("Project Completion Date: " + resultSet.getDate("completion_date"));
+                    System.out.println("Project Number: " + resultSet.getInt("project_number"));
+                    System.out.println("Project Name: " + resultSet.getString("project_name"));
+                    System.out.println("Building Type: " + resultSet.getString("building_type"));
+                    System.out.println("Project Address: " + resultSet.getString("project_address"));
+                    System.out.println("ERF Number: " + resultSet.getInt("erf_number"));
+                    System.out.println("Total Project Fee: " + resultSet.getDouble("total_projectfee"));
+                    System.out.println("Total Paid: " + resultSet.getDouble("total_paid"));
+                    System.out.println("Project Deadline: " + resultSet.getDate("project_deadline"));
+                    System.out.println("Architect: " + resultSet.getString("architect_name"));
+                    System.out.println("Contractor: " + resultSet.getString("contractor_name"));
+                    System.out.println("Project Manager: " + resultSet.getString("manager_name"));
+                    System.out.println("Structural Engineer: " + resultSet.getString("structuraleng_name"));
+                    System.out.println("");
+                    System.out.println("--------------------------");
+                    System.out.println("");
+                }
+            } else {
+                System.out.println("Project not found or could not be finalized.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}

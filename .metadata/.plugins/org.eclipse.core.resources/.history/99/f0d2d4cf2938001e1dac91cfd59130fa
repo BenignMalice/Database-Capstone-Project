@@ -1,0 +1,56 @@
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class OverdueProjects {
+    private Connection connection;
+
+    public OverdueProjects(Connection connection) {
+        this.connection = connection;
+    }
+
+    public void displayOverdueProjects() {
+        try {
+            PreparedStatement statement = connection.prepareStatement(
+                "SELECT P.*, A.architect_name, C.contractor_name, PM.manager_name, SE.structuraleng_name " +
+                "FROM Project P " +
+                "JOIN Architect A ON P.architect_id = A.architect_id " +
+                "JOIN Contractor C ON P.contractor_id = C.contractor_id " +
+                "JOIN ProjectManager PM ON P.projectmanager_id = PM.projectmanager_id " +
+                "JOIN StructuralEng SE ON P.structuraleng_id = SE.structuraleng_id " +
+                "WHERE P.project_deadline < CURDATE();"
+            );
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                System.out.println("");
+                System.out.println("Overdue projects:");
+                System.out.println("-----------------");
+                do {
+                    // Display all project details from the result set
+                    System.out.println("Project Number: " + resultSet.getInt("project_number"));
+                    System.out.println("Project Name: " + resultSet.getString("project_name"));
+                    System.out.println("Building Type: " + resultSet.getString("building_type"));
+                    System.out.println("Project Address: " + resultSet.getString("project_address"));
+                    System.out.println("Erf Number: " + resultSet.getInt("erf_number"));
+                    System.out.println("Total Project Fee: " + resultSet.getDouble("total_projectfee"));
+                    System.out.println("Total Paid: " + resultSet.getDouble("total_paid"));
+                    System.out.println("Project Deadline: " + resultSet.getString("project_deadline"));
+                    System.out.println("Architect: " + resultSet.getString("architect_name"));
+                    System.out.println("Contractor: " + resultSet.getString("contractor_name"));
+                    System.out.println("Project Manager: " + resultSet.getString("manager_name"));
+                    System.out.println("Structural Engineer: " + resultSet.getString("structuraleng_name"));
+                    System.out.println("");
+                    System.out.println("-----------------------------");
+                    System.out.println("");
+                } while (resultSet.next());
+            } else {
+                System.out.println("No overdue projects found.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}

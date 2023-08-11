@@ -1,0 +1,723 @@
+import java.sql.*;
+import java.util.Scanner;
+
+public class Main {
+
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/PoisePMS";
+        String user = "otheruser";
+        String password = "swordfish";
+
+        try {
+        	// Establish database connection
+            Connection connection = DriverManager.getConnection(url, user, password);
+            System.out.println("Connected to the database");
+
+            Scanner scanner = new Scanner(System.in);
+            boolean exit = false;
+
+            while (!exit) {
+                System.out.println("Select an option:");
+                System.out.println("1. Add new project");
+                System.out.println("2. Update/Delete project information");
+                System.out.println("3. Finalise project");
+                System.out.println("4. List incomplete projects");
+                System.out.println("5. List overdue projects");
+                System.out.println("6. Find project by number or name");
+                System.out.println("7. Exit");
+                int choice = scanner.nextInt();
+                scanner.nextLine(); 
+
+                switch (choice) {
+                    case 1:
+                        addNewProject(connection, scanner);
+                        break;
+                    case 2:
+                        updateProject(connection, scanner);
+                        break;
+                    case 3:
+                        finaliseProject(connection, scanner);
+                        break;
+                    case 4:
+                        listIncompleteProjects(connection);
+                        break;
+                    case 5:
+                        listOverdueProjects(connection);
+                        break;
+                    case 6:
+                        findProjectByNameOrNumber(connection, scanner);
+                        break;
+                    case 7:
+                        exit = true;
+                        System.out.println("Program exited.");
+                        break;
+                    default:
+                        System.out.println("Invalid choice");
+                }
+            }
+
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+
+
+	// Method to add a new project to the database
+    public static void addNewProject(Connection connection, Scanner scanner) {
+    	System.out.println("Add new project");
+    	System.out.println("---------------");
+    	// Get project details from user input
+    	System.out.println("Enter project number: ");
+	    int projectNumber = scanner.nextInt();
+	    scanner.nextLine(); 
+	    System.out.println("Enter project name: ");
+	    String projectName = scanner.nextLine();
+
+	    System.out.println("Enter building type: ");
+	    String buildingType = scanner.nextLine();
+
+	    System.out.println("Enter project address: ");
+	    String projectAddress = scanner.nextLine();
+
+	    System.out.println("Enter erf number: ");
+	    int erfNumber = scanner.nextInt();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter total project fee: ");
+	    double totalProjectFee = scanner.nextDouble();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter total paid: ");
+	    double totalPaid = scanner.nextDouble();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter project deadline (YYYY-MM-DD): ");
+	    String projectDeadline = scanner.nextLine();
+
+	    System.out.println("Enter architect ID: ");
+	    int architectID = scanner.nextInt();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter contractor ID: ");
+	    int contractorID = scanner.nextInt();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter customer ID: ");
+	    int customerID = scanner.nextInt();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter project manager ID: ");
+	    int projectManagerID = scanner.nextInt();
+	    scanner.nextLine(); 
+
+	    System.out.println("Enter structural engineer ID: ");
+	    int structuralEngID = scanner.nextInt();
+	    scanner.nextLine(); 
+
+	    try {
+	    	// Prepare and execute SQL insert statement
+	        PreparedStatement statement = connection.prepareStatement(
+	            "INSERT INTO Project (project_number, project_name, building_type, project_address, erf_number, " +
+	            "total_projectfee, total_paid, project_deadline, architect_id, contractor_id, " +
+	            "customer_id, projectmanager_id, structuraleng_id) " +
+	            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	        );
+
+	        // Set parameters 
+	        statement.setInt(1, projectNumber);
+	        statement.setString(2, projectName);
+	        statement.setString(3, buildingType);
+	        statement.setString(4, projectAddress);
+	        statement.setInt(5, erfNumber);
+	        statement.setDouble(6, totalProjectFee);
+	        statement.setDouble(7, totalPaid);
+	        statement.setString(8, projectDeadline);
+	        statement.setInt(9, architectID);
+	        statement.setInt(10, contractorID);
+	        statement.setInt(11, customerID);
+	        statement.setInt(12, projectManagerID);
+	        statement.setInt(13, structuralEngID);
+
+	        int rowsAffected = statement.executeUpdate();
+
+	        if (rowsAffected > 0) {
+	        	System.out.println("---------------------------------");
+	            System.out.println("New project added to the database.");
+
+	            // Display the added project details
+	            System.out.println("");
+	            System.out.println("Added Project Details:");
+	            System.out.println("----------------------");
+	            System.out.println("Project Number: " + projectNumber);
+	            System.out.println("Project Name: " + projectName);
+	            System.out.println("Building Type: " + buildingType);
+	            System.out.println("Project Address: " + projectAddress);
+	            System.out.println("ERF Number: " + erfNumber);
+	            System.out.println("Total Project Fee: " + totalProjectFee);
+	            System.out.println("Total Paid: " + totalPaid);
+	            System.out.println("Project Deadline: " + projectDeadline);
+	            // Display associated person names using their IDs
+	            System.out.println("Architect: " + getPersonName(connection, "Architect", architectID));
+	            System.out.println("Contractor: " + getPersonName(connection, "Contractor", contractorID));
+	            System.out.println("Customer: " + getPersonName(connection, "Contractor", customerID));
+	            System.out.println("Project Manager ID: " + getPersonName(connection, "Contractor", projectManagerID));
+	            System.out.println("Structural Engineer ID: " + getPersonName(connection, "Contractor", structuralEngID));
+	            System.out.println("----------------------------------------");
+
+	            }
+	        
+	        else {
+	        	System.out.println("Failed to add project.");
+	        	System.out.println("");
+	        	
+	        }
+	        System.out.println("New project added to the database.");
+	        System.out.println("");
+	        
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	}
+    
+    // Method to find a project by project number or name
+    private static void findProjectByNameOrNumber(Connection connection, Scanner scanner) {
+        System.out.println("Enter project number or name to search: ");
+        System.out.println("---------------------------------------");
+        String searchTerm = scanner.nextLine();
+
+        try {
+            PreparedStatement statement = connection.prepareStatement(
+                "SELECT P.*, A.architect_name, C.contractor_name, PM.manager_name, SE.structuraleng_name " +
+                "FROM Project P " +
+                "LEFT JOIN Architect A ON P.architect_id = A.architect_id " +
+                "LEFT JOIN Contractor C ON P.contractor_id = C.contractor_id " +
+                "LEFT JOIN ProjectManager PM ON P.projectmanager_id = PM.projectmanager_id " +
+                "LEFT JOIN StructuralEng SE ON P.structuraleng_id = SE.structuraleng_id " +
+                "WHERE P.project_number = ? OR P.project_name LIKE ?"
+            );
+            statement.setString(1, searchTerm);
+            statement.setString(2, "%" + searchTerm + "%");
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                System.out.println("");
+                System.out.println("Found matching project(s):");
+                System.out.println("");
+                do {
+                    // Display all project details from the result set
+                    System.out.println("Project Number: " + resultSet.getInt("project_number"));
+                    System.out.println("Project Name: " + resultSet.getString("project_name"));
+                    System.out.println("Building Type: " + resultSet.getString("building_type"));
+                    System.out.println("Project Address: " + resultSet.getString("project_address"));
+                    System.out.println("Erf Number: " + resultSet.getInt("erf_number"));
+                    System.out.println("Total Project Fee: " + resultSet.getDouble("total_projectfee"));
+                    System.out.println("Total Paid: " + resultSet.getDouble("total_paid"));
+                    System.out.println("Project Deadline: " + resultSet.getString("project_deadline"));
+                    System.out.println("Architect: " + resultSet.getString("architect_name"));
+                    System.out.println("Contractor: " + resultSet.getString("contractor_name"));
+                    System.out.println("Project Manager: " + resultSet.getString("manager_name"));
+                    System.out.println("Structural Engineer: " + resultSet.getString("structuraleng_name"));
+                    System.out.println("----------------------------------");
+                } while (resultSet.next());
+            } else {
+                System.out.println("No matching project found.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+     
+
+    private static void listOverdueProjects(Connection connection) {
+        try {
+            // Prepare SQL query to retrieve overdue projects with associated names
+            PreparedStatement statement = connection.prepareStatement(
+                "SELECT P.*, A.architect_name, C.contractor_name, PM.manager_name, SE.structuraleng_name " +
+                "FROM Project P " +
+                "JOIN Architect A ON P.architect_id = A.architect_id " +
+                "JOIN Contractor C ON P.contractor_id = C.contractor_id " +
+                "JOIN ProjectManager PM ON P.projectmanager_id = PM.projectmanager_id " +
+                "JOIN StructuralEng SE ON P.structuraleng_id = SE.structuraleng_id " +
+                "WHERE P.project_deadline < CURDATE();" 
+            );
+
+            // Execute the query and get the result set
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+            	System.out.println("");
+                System.out.println("Overdue projects:");
+                System.out.println("-----------------");
+                do {
+                    // Display all project details from the result set
+                    System.out.println("Project Number: " + resultSet.getInt("project_number"));
+                    System.out.println("Project Name: " + resultSet.getString("project_name"));
+                    System.out.println("Building Type: " + resultSet.getString("building_type"));
+                    System.out.println("Project Address: " + resultSet.getString("project_address"));
+                    System.out.println("Erf Number: " + resultSet.getInt("erf_number"));
+                    System.out.println("Total Project Fee: " + resultSet.getDouble("total_projectfee"));
+                    System.out.println("Total Paid: " + resultSet.getDouble("total_paid"));
+                    System.out.println("Project Deadline: " + resultSet.getString("project_deadline"));
+                    System.out.println("Architect: " + resultSet.getString("architect_name"));
+                    System.out.println("Contractor: " + resultSet.getString("contractor_name"));
+                    System.out.println("Project Manager: " + resultSet.getString("manager_name"));
+                    System.out.println("Structural Engineer: " + resultSet.getString("structuraleng_name"));
+                    System.out.println("");
+                    System.out.println("-----------------------------");
+                    System.out.println("");
+                } while (resultSet.next());
+            } else {
+                System.out.println("No overdue projects found.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+    private static void listIncompleteProjects(Connection connection) {
+    	try {
+            PreparedStatement statement = connection.prepareStatement(
+                "SELECT * FROM Project " +
+                "WHERE project_status <> 'finalised';"
+            );
+
+            ResultSet resultSet = statement.executeQuery();
+
+            if (resultSet.next()) {
+                System.out.println("");
+                System.out.println("Projects in progress:");
+                System.out.println("---------------------");
+                System.out.println("");
+
+                do {
+                    // Display all project details from the result set
+                    System.out.println("Project Number: " + resultSet.getInt("project_number"));
+                    System.out.println("Project Name: " + resultSet.getString("project_name"));
+                    System.out.println("Building Type: " + resultSet.getString("building_type"));
+                    System.out.println("Project Address: " + resultSet.getString("project_address"));
+                    System.out.println("Erf Number: " + resultSet.getInt("erf_number"));
+                    System.out.println("Total Project Fee: " + resultSet.getDouble("total_projectfee"));
+                    System.out.println("Total Paid: " + resultSet.getDouble("total_paid"));
+                    System.out.println("Project Deadline: " + resultSet.getString("project_deadline"));
+                    System.out.println("Architect ID: " + resultSet.getInt("architect_id"));
+                    System.out.println("Contractor ID: " + resultSet.getInt("contractor_id"));
+                    System.out.println("Project Manager ID: " + resultSet.getInt("projectmanager_id"));
+                    System.out.println("Structural Engineer ID: " + resultSet.getInt("structuraleng_id"));
+                    System.out.println("");
+                    System.out.println("-----------------------------");
+                    System.out.println("");
+
+                } while (resultSet.next());
+            } else {
+                System.out.println("No projects in progress found.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void finaliseProject(Connection connection, Scanner scanner) {
+        System.out.println("Enter project number to finalize: ");
+        int projectNumber = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+
+        try {
+            // Update project status and completion date
+            PreparedStatement updateStatement = connection.prepareStatement(
+                "UPDATE Project SET project_status = 'finalised', completion_date = CURDATE() WHERE project_number = ?"
+            );
+            updateStatement.setInt(1, projectNumber);
+            int rowsUpdated = updateStatement.executeUpdate();
+
+            if (rowsUpdated > 0) {
+                System.out.println("Project finalised successfully.");
+                System.out.println("-------------------------------");
+                System.out.println("");
+
+                // Fetch and display the finalized project details
+                PreparedStatement selectStatement = connection.prepareStatement(
+                    "SELECT P.*, A.architect_name, C.contractor_name, PM.manager_name, SE.structuraleng_name " +
+                    "FROM Project P " +
+                    "JOIN Architect A ON P.architect_id = A.architect_id " +
+                    "JOIN Contractor C ON P.contractor_id = C.contractor_id " +
+                    "JOIN ProjectManager PM ON P.projectmanager_id = PM.projectmanager_id " +
+                    "JOIN StructuralEng SE ON P.structuraleng_id = SE.structuraleng_id " +
+                    "WHERE P.project_number = ?"
+                );
+                selectStatement.setInt(1, projectNumber);
+
+                ResultSet resultSet = selectStatement.executeQuery();
+                if (resultSet.next()) {
+                    System.out.println("Finalised Project Details:");
+                    System.out.println("--------------------------");
+                    System.out.println("");
+                    // Print completion date
+                    System.out.println("Project Completion Date: " + resultSet.getDate("completion_date"));
+                    System.out.println("Project Number: " + resultSet.getInt("project_number"));
+                    System.out.println("Project Name: " + resultSet.getString("project_name"));
+                    System.out.println("Building Type: " + resultSet.getString("building_type"));
+                    System.out.println("Project Address: " + resultSet.getString("project_address"));
+                    System.out.println("ERF Number: " + resultSet.getInt("erf_number"));
+                    System.out.println("Total Project Fee: " + resultSet.getDouble("total_projectfee"));
+                    System.out.println("Total Paid: " + resultSet.getDouble("total_paid"));
+                    System.out.println("Project Deadline: " + resultSet.getDate("project_deadline"));
+                    System.out.println("Architect: " + resultSet.getString("architect_name"));
+                    System.out.println("Contractor: " + resultSet.getString("contractor_name"));
+                    System.out.println("Project Manager: " + resultSet.getString("manager_name"));
+                    System.out.println("Structural Engineer: " + resultSet.getString("structuraleng_name"));
+                    System.out.println("");
+                    System.out.println("--------------------------");
+                    System.out.println("");
+                }
+            } else {
+                System.out.println("Project not found or could not be finalized.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }  
+    
+    private static void updateProject(Connection connection, Scanner scanner) {
+        System.out.println("Enter project number to update: ");
+        int projectNumber = scanner.nextInt();
+        scanner.nextLine(); 
+        
+	        try {
+	            PreparedStatement selectStatement = connection.prepareStatement(
+	                "SELECT * FROM Project WHERE project_number = ?"
+	            );
+	            selectStatement.setInt(1, projectNumber);
+	
+	            ResultSet resultSet = selectStatement.executeQuery();
+	            
+	            if (resultSet.next()) {
+	                System.out.println("Current Project Details:");
+	                System.out.println("Project Number: " + resultSet.getInt("project_number"));
+	                System.out.println("Project Name: " + resultSet.getString("project_name"));
+	                System.out.println("Building Type: " + resultSet.getString("building_type"));
+	                System.out.println("Project Address: " + resultSet.getString("project_address"));
+	                System.out.println("ERF Number: " + resultSet.getInt("erf_number"));
+	                System.out.println("Total Project Fee: " + resultSet.getDouble("total_projectfee"));
+	                System.out.println("Total Paid: " + resultSet.getDouble("total_paid"));
+	                System.out.println("Project Deadline: " + resultSet.getDate("project_deadline"));
+	                System.out.println("Architect: " + resultSet.getInt("architect_id"));
+	                System.out.println("Contractor: " + resultSet.getInt("contractor_id"));
+	                System.out.println("Project Manager: " + resultSet.getInt("projectmanager_id"));
+	                System.out.println("Structural Engineer: " + resultSet.getInt("structuraleng_id"));
+	                System.out.println("");
+	                System.out.println("Choose an option:");
+	                System.out.println("1. Update project name");
+	                System.out.println("2. Update building type");
+	                System.out.println("3. Update project address");
+	                System.out.println("4. Update ERF number");
+	                System.out.println("5. Update total project fee");
+	                System.out.println("6. Update total paid amount");
+	                System.out.println("7. Update project deadline");
+	                System.out.println("8. Update Architect");
+	                System.out.println("9. Update Contractor");
+	                System.out.println("10. Update Project Manager");
+	                System.out.println("11. Update Structural Engineer");
+	                System.out.println("");              
+	                System.out.println("12. Delete project name");
+	                System.out.println("13. Delete building type");
+	                System.out.println("14. Delete project address");
+	                System.out.println("15. Delete ERF number");
+	                System.out.println("16. Delete total project fee");
+	                System.out.println("17. Delete total paid amount");
+	                System.out.println("18. Delete project deadline");
+	                System.out.println("19. Delete Architect");
+	                System.out.println("20. Delete Contractor");
+	                System.out.println("21. Delete Project Manager");
+	                System.out.println("22. Delete Structural Engineer");
+	                System.out.println("");         
+	                
+	                int option = scanner.nextInt();
+	                scanner.nextLine();
+	                
+	                PreparedStatement updateStatement = null;
+	                
+	                switch (option) {
+	                    case 1:
+	                    	// Update project name
+	                    	System.out.println("Enter updated project name: ");
+	                        String updatedName = scanner.nextLine();
+	                        if (!updatedName.isEmpty()) {
+	                            PreparedStatement updateStatement1 = connection.prepareStatement(
+	                                "UPDATE Project SET project_name = ? WHERE project_number = ?"
+	                            );
+	                            updateStatement1.setString(1, updatedName);
+	                            updateStatement1.setInt(2, projectNumber);
+	                            updateStatement1.executeUpdate();
+	                        }
+	                        break;
+	                    case 2:
+	                        // Update building type
+	                        System.out.println("Enter updated building type: ");
+	                        String updatedBuildingType = scanner.nextLine();
+	                        if (!updatedBuildingType.isEmpty()) {
+	                            PreparedStatement updateStatement1 = connection.prepareStatement(
+	                                "UPDATE Project SET building_type = ? WHERE project_number = ?"
+	                            );
+	                            updateStatement1.setString(1, updatedBuildingType);
+	                            updateStatement1.setInt(2, projectNumber);
+	                            updateStatement1.executeUpdate();
+	                        }
+	                        break;
+	                    case 3:
+	                        // Update project address
+	                        System.out.println("Enter updated project address: ");
+	                        String updatedAddress = scanner.nextLine();
+	                        if (!updatedAddress.isEmpty()) {
+	                            PreparedStatement updateStatement1 = connection.prepareStatement(
+	                                "UPDATE Project SET project_address = ? WHERE project_number = ?"
+	                            );
+	                            updateStatement1.setString(1, updatedAddress);
+	                            updateStatement1.setInt(2, projectNumber);
+	                            updateStatement1.executeUpdate();
+	                        }
+	                        break;
+	                    case 4:
+	                        // Update ERF number
+	                        System.out.println("Enter updated ERF number: ");
+	                        int updatedErfNumber = scanner.nextInt();
+	                        scanner.nextLine();
+	                        if (updatedErfNumber > 0) {
+	                            PreparedStatement updateStatement1 = connection.prepareStatement(
+	                                "UPDATE Project SET erf_number = ? WHERE project_number = ?"
+	                            );
+	                            updateStatement1.setInt(1, updatedErfNumber);
+	                            updateStatement1.setInt(2, projectNumber);
+	                            updateStatement1.executeUpdate();
+	                        }
+	                        break;
+	                    case 5:
+	                        // Update total project fee
+	                        System.out.println("Enter updated total project fee: ");
+	                        double updatedProjectFee = scanner.nextDouble();
+	                        scanner.nextLine();
+	                        if (updatedProjectFee >= 0) {
+	                            PreparedStatement updateStatement1 = connection.prepareStatement(
+	                                "UPDATE Project SET total_projectfee = ? WHERE project_number = ?"
+	                            );
+	                            updateStatement1.setDouble(1, updatedProjectFee);
+	                            updateStatement1.setInt(2, projectNumber);
+	                            updateStatement1.executeUpdate();
+	                        }
+	                        break;
+	                    case 6:
+	                        // Update total paid amount
+	                        System.out.println("Enter updated total paid amount: ");
+	                        double updatedTotalPaid = scanner.nextDouble();
+	                        scanner.nextLine();
+	                        if (updatedTotalPaid >= 0) {
+	                            PreparedStatement updateStatement1 = connection.prepareStatement(
+	                                "UPDATE Project SET total_paid = ? WHERE project_number = ?"
+	                            );
+	                            updateStatement1.setDouble(1, updatedTotalPaid);
+	                            updateStatement1.setInt(2, projectNumber);
+	                            updateStatement1.executeUpdate();
+	                        }
+	                        break;
+	                    case 7:
+	                        // Update project deadline
+	                        System.out.println("Enter updated project deadline (YYYY-MM-DD): ");
+	                        String updatedDeadline = scanner.nextLine();
+	                        if (!updatedDeadline.isEmpty()) {
+	                            PreparedStatement updateStatement1 = connection.prepareStatement(
+	                                "UPDATE Project SET project_deadline = ? WHERE project_number = ?"
+	                            );
+	                            updateStatement1.setString(1, updatedDeadline);
+	                            updateStatement1.setInt(2, projectNumber);
+	                            updateStatement1.executeUpdate();
+	                        }
+	                        break;
+	                    case 8:
+	                    	// Update Architect
+	                        System.out.println("Enter updated Architect ID (or press Enter to keep current): ");
+	                        String updatedArchitectID = scanner.nextLine();
+	                        if (!updatedArchitectID.isEmpty()) {
+	                            PreparedStatement updateStatement1 = connection.prepareStatement(
+	                                "UPDATE Project SET architect_id = ? WHERE project_number = ?"
+	                            );
+	                            updateStatement1.setString(1, updatedArchitectID);
+	                            updateStatement1.setInt(2, projectNumber);
+	                            updateStatement1.executeUpdate();
+	                        }
+	                        break;
+	                    case 9:
+	                    	// Update Contractor
+	                        System.out.println("Enter updated Contractor ID (or press Enter to keep current): ");
+	                        String updatedContractorID = scanner.nextLine();
+	                        if (!updatedContractorID.isEmpty()) {
+	                            PreparedStatement updateStatement1 = connection.prepareStatement(
+	                                "UPDATE Project SET contractor_id = ? WHERE project_number = ?"
+	                            );
+	                            updateStatement1.setString(1, updatedContractorID);
+	                            updateStatement1.setInt(2, projectNumber);
+	                            updateStatement1.executeUpdate();
+	                        }
+	                        break;
+	                    case 10:
+	                    	// Update Project Manager
+	                        System.out.println("Enter updated Project Manager ID (or press Enter to keep current): ");
+	                        String updatedProjectManagerID = scanner.nextLine();
+	                        if (!updatedProjectManagerID.isEmpty()) {
+	                            PreparedStatement updateStatement1 = connection.prepareStatement(
+	                                "UPDATE Project SET projectmanager_id = ? WHERE project_number = ?"
+	                            );
+	                            updateStatement1.setString(1, updatedProjectManagerID);
+	                            updateStatement1.setInt(2, projectNumber);
+	                            updateStatement1.executeUpdate();
+	                        }
+	                        break;
+	                    case 11:
+	                    	// Update Structural Engineer
+	                        System.out.println("Enter updated Structural Engineer ID (or press Enter to keep current): ");
+	                        String updatedStructuralEngineerID = scanner.nextLine();
+	                        if (!updatedStructuralEngineerID.isEmpty()) {
+	                            PreparedStatement updateStatement1 = connection.prepareStatement(
+	                                "UPDATE Project SET structuraleng_id = ? WHERE project_number = ?"
+	                            );
+	                            updateStatement1.setString(1, updatedStructuralEngineerID);
+	                            updateStatement1.setInt(2, projectNumber);
+	                            updateStatement1.executeUpdate();
+	                        }
+	                        break;
+	                        
+	                    case 12:
+	                        // Delete project name
+	                        PreparedStatement deleteNameStatement = connection.prepareStatement(
+	                            "UPDATE Project SET project_name = NULL WHERE project_number = ?"
+	                        );
+	                        deleteNameStatement.setInt(1, projectNumber);
+	                        deleteNameStatement.executeUpdate();
+	                        break;
+	                    case 13:
+	                        // Delete building type
+	                        PreparedStatement deleteTypeStatement = connection.prepareStatement(
+	                            "UPDATE Project SET building_type = NULL WHERE project_number = ?"
+	                        );
+	                        deleteTypeStatement.setInt(1, projectNumber);
+	                        deleteTypeStatement.executeUpdate();
+	                        break;
+	                    case 14:
+	                        // Delete project address
+	                        PreparedStatement deleteAddressStatement = connection.prepareStatement(
+	                            "UPDATE Project SET project_address = NULL WHERE project_number = ?"
+	                        );
+	                        deleteAddressStatement.setInt(1, projectNumber);
+	                        deleteAddressStatement.executeUpdate();
+	                        break;
+	                    case 15:
+	                        // Delete ERF number
+	                        PreparedStatement deleteErfStatement = connection.prepareStatement(
+	                            "UPDATE Project SET erf_number = NULL WHERE project_number = ?"
+	                        );
+	                        deleteErfStatement.setInt(1, projectNumber);
+	                        deleteErfStatement.executeUpdate();
+	                        break;
+	                    case 16:
+	                        // Delete total project fee
+	                        PreparedStatement deleteFeeStatement = connection.prepareStatement(
+	                            "UPDATE Project SET total_projectfee = NULL WHERE project_number = ?"
+	                        );
+	                        deleteFeeStatement.setInt(1, projectNumber);
+	                        deleteFeeStatement.executeUpdate();
+	                        break;
+	                    case 17:
+	                        // Delete total paid amount
+	                        PreparedStatement deletePaidStatement = connection.prepareStatement(
+	                            "UPDATE Project SET total_paid = NULL WHERE project_number = ?"
+	                        );
+	                        deletePaidStatement.setInt(1, projectNumber);
+	                        deletePaidStatement.executeUpdate();
+	                        break;
+	                    case 18:
+	                        // Delete project deadline
+	                        PreparedStatement deleteDeadlineStatement = connection.prepareStatement(
+	                            "UPDATE Project SET project_deadline = NULL WHERE project_number = ?"
+	                        );
+	                        deleteDeadlineStatement.setInt(1, projectNumber);
+	                        deleteDeadlineStatement.executeUpdate();
+	                        break;
+	                    case 19:
+	                        // Delete Architect
+	                        PreparedStatement deleteArchitectStatement = connection.prepareStatement(
+	                            "UPDATE Project SET architect_id = NULL WHERE project_number = ?"
+	                        );
+	                        deleteArchitectStatement.setInt(1, projectNumber);
+	                        deleteArchitectStatement.executeUpdate();
+	                        break;
+
+	                    case 20:
+	                        // Delete Contractor
+	                        PreparedStatement deleteContractorStatement = connection.prepareStatement(
+	                            "UPDATE Project SET contractor_id = NULL WHERE project_number = ?"
+	                        );
+	                        deleteContractorStatement.setInt(1, projectNumber);
+	                        deleteContractorStatement.executeUpdate();
+	                        break;
+
+	                    case 21:
+	                        // Delete Project Manager
+	                        PreparedStatement deleteProjectManagerStatement = connection.prepareStatement(
+	                            "UPDATE Project SET projectmanager_id = NULL WHERE project_number = ?"
+	                        );
+	                        deleteProjectManagerStatement.setInt(1, projectNumber);
+	                        deleteProjectManagerStatement.executeUpdate();
+	                        break;
+
+	                    case 22:
+	                        // Delete Structural Engineer
+	                        PreparedStatement deleteStructuralEngineerStatement = connection.prepareStatement(
+	                            "UPDATE Project SET structuraleng_id = NULL WHERE project_number = ?"
+	                        );
+	                        deleteStructuralEngineerStatement.setInt(1, projectNumber);
+	                        deleteStructuralEngineerStatement.executeUpdate();
+	                        break;
+	                        
+	                    default:
+	                        System.out.println("Invalid option.");
+	                        break;
+	                }
+	                        
+	                
+	                if (updateStatement != null) {
+	                    updateStatement.setInt(2, projectNumber);
+	                    updateStatement.executeUpdate();
+	                    System.out.println("Field updated/deleted successfully.");
+	                }
+	                
+	            } else {
+	                System.out.println("Project not found.");
+	            }
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	    }
+	
+
+	private static String getPersonName(Connection connection, String tableName, int personID) {
+	    String personName = "";
+	    try {
+	        PreparedStatement statement = connection.prepareStatement(
+	            "SELECT " + tableName.toLowerCase() + "_name FROM " + tableName + " WHERE " + tableName.toLowerCase() + "_id = ?"
+	        );
+	        statement.setInt(1, personID);
+	
+	        ResultSet resultSet = statement.executeQuery();
+	        if (resultSet.next()) {
+	            personName = resultSet.getString(tableName.toLowerCase() + "_name");
+	        }
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
+	    return personName;
+	}
+}

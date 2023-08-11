@@ -1,0 +1,2 @@
+INDEX VERSION 1.132+C:\Users\darry\OneDrive\Desktop\HyperionDev\Dropbox\DB23010005997\3. DB Skills Program\L3T08\Compulsory Task 2\PoiseProjectManagement\.metadata\.plugins\org.eclipse.jdt.core
+1865797976.index

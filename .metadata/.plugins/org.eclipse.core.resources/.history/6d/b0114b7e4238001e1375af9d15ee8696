@@ -1,0 +1,90 @@
+import java.sql.*;
+import java.util.Scanner;
+
+public class Main {
+
+	/**
+	 * This class contains the main entry point for the PoisePMS application.
+	 * It allows users to interact with the database and perform various actions on projects.
+	 */
+	
+    public static void main(String[] args) {
+    	// Database connection parameters
+        String url = "jdbc:mysql://localhost:3306/PoisePMS";
+        String user = "otheruser";
+        String password = "swordfish";
+
+        try {
+        	// Establish database connection
+            Connection connection = DriverManager.getConnection(url, user, password);
+            System.out.println("Connected to the database");
+
+            Scanner scanner = new Scanner(System.in);
+            
+            // Instantiate classes to perform various actions on projects
+            AddProject addNewProject = new AddProject(connection); 
+            FindProject findProject = new FindProject(connection);
+            OverdueProjects OverdueProjects = new OverdueProjects(connection);
+            IncompleteProjects IncompleteProjects = new IncompleteProjects(connection);
+            FinaliseProject finaliseProject = new FinaliseProject(connection);
+            UpdateProject updateProject = new UpdateProject(connection);
+            
+            
+            boolean exit = false;
+
+            while (!exit) {
+            	// Display menu options to the user
+                System.out.println("Select an option:");
+                System.out.println("1. Add new project");
+                System.out.println("2. Update/Delete project information");
+                System.out.println("3. Finalise project");
+                System.out.println("4. List incomplete projects");
+                System.out.println("5. List overdue projects");
+                System.out.println("6. Find project by number or name");
+                System.out.println("7. Exit");
+                int choice = scanner.nextInt();
+                scanner.nextLine(); 
+                 
+                switch (choice) {
+                    case 1:
+                    	// Call method to add a new project
+
+                        break;
+                    case 2:
+                    	// Call method to update/delete project information
+                    	updateProject.updateProject(scanner);
+                        break;
+                    case 3:
+                    	// Call method to finalise a project
+                    	finaliseProject.finaliseProject(scanner);
+                        break;
+                    case 4:
+                    	// Call method to display incomplete projects
+                    	IncompleteProjects.displayIncompleteProjects();
+                        break;
+                    case 5:
+                    	// Call method to display overdue projects
+                    	OverdueProjects.displayOverdueProjects();
+                        break;
+                    case 6:
+                    	// Call method to search for a project by number or name
+                    	findProject.searchProjects(scanner);
+                        break;
+                    case 7:
+                    	// Exit the program
+                        exit = true;
+                        System.out.println("Program exited.");
+                        break;
+                    default:
+                        System.out.println("Invalid choice");
+                }
+            }
+
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}   
+  
+	
